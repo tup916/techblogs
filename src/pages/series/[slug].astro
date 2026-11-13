@@ -1,0 +1,90 @@
+---
+import { getCollection } from 'astro:content';
+import BaseHead from '../../components/BaseHead.astro';
+import Footer from '../../components/Footer.astro';
+import FormattedDate from '../../components/FormattedDate.astro';
+import BookList from '../../components/BookList.astro';
+import Header from '../../components/Header.astro';
+import { SITE_TITLE } from '../../consts';
+import { SERIES, TYPES } from '../../data/series';
+
+export function getStaticPaths() {
+	return Object.keys(SERIES).map((slug) => ({ params: { slug } }));
+}
+
+const { slug } = Astro.params;
+const series = SERIES[slug!];
+const posts = (await getCollection('blog'))
+	.filter((p) => p.data.series === slug)
+	.sort(
+		(a, b) =>
+			(a.data.part ?? 0) - (b.data.part ?? 0) || a.data.pubDate.valueOf() - b.data.pubDate.valueOf(),
+	);
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={`${series.title} | ${SITE_TITLE}`} description={series.blurb} />
+		<style>
+			.kind {
+				margin: 0;
+				font-size: 0.8em;
+				font-weight: 700;
+				text-transform: uppercase;
+				letter-spacing: 0.05em;
+				color: var(--accent);
+			}
+			ul {
+				list-style: none;
+				padding: 0;
+			}
+			li {
+				display: flex;
+				justify-content: space-between;
+				gap: 1em;
+				padding: 0.6em 0;
+				border-bottom: 1px solid rgb(var(--gray-light));
+			}
+			li a {
+				font-weight: 700;
+				text-decoration: none;
+			}
+			.date {
+				color: rgb(var(--gray));
+				white-space: nowrap;
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<p class="kind">{TYPES[series.type].emoji} {TYPES[series.type].label}</p>
+			<h1>{series.emoji} {series.title}</h1>
+			<p>{series.blurb}</p>
+			{
+				posts.length > 0 && series.type === 'reading' ? (
+					<BookList posts={posts} />
+				) : posts.length === 0 ? (
+					<p><em>Coming soon. Nothing here yet.</em></p>
+				) : (
+					<ul>
+						{posts.map((post) => (
+							<li>
+								<a href={`/blog/${post.id}/`}>
+									{post.data.part ? `Part ${post.data.part}: ` : ''}
+									{post.data.title}
+								</a>
+								<span class="date">
+									<FormattedDate date={post.data.pubDate} />
+								</span>
+							</li>
+						))}
+					</ul>
+				)
+			}
+			<p><a href="/series">← All blog series</a></p>
+		</main>
+		<Footer />
+	</body>
+</html>

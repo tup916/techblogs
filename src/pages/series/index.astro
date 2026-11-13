@@ -1,0 +1,26 @@
+---
+import BaseHead from '../../components/BaseHead.astro';
+import Footer from '../../components/Footer.astro';
+import Header from '../../components/Header.astro';
+import SeriesGrid from '../../components/SeriesGrid.astro';
+import { SITE_TITLE } from '../../consts';
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead
+			title={`Blog Series | ${SITE_TITLE}`}
+			description="Posts grouped into series: projects, engineering practices and reading notes."
+		/>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<h1>Blog Series</h1>
+			<p>Every post belongs to a series. Pick one to start reading.</p>
+			<SeriesGrid />
+		</main>
+		<Footer />
+	</body>
+</html>

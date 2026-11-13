@@ -5,10 +5,16 @@ import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
 import FormattedDate from '../components/FormattedDate.astro';
 import Header from '../components/Header.astro';
+import { SERIES } from '../data/series';
 
 type Props = CollectionEntry<'blog'>['data'];
 
-const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
+const { title, description, pubDate, updatedDate, heroImage, series, part, author, rating, technical, emoji } =
+	Astro.props;
+// Portrait images (like a book cover) are shown at their natural shape instead of being cropped wide.
+const isPortrait = heroImage ? heroImage.height > heroImage.width : false;
+const bookEmoji = emoji ?? (technical ? '💻' : '📖');
+const seriesInfo = series ? SERIES[series] : undefined;
 ---
 
 <html lang="en">
@@ -45,6 +51,20 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 			.title h1 {
 				margin: 0 0 0.5em 0;
 			}
+			.series-label {
+				margin: 0 0 0.75em;
+				font-size: 0.8em;
+				font-weight: 700;
+				text-transform: uppercase;
+				letter-spacing: 0.05em;
+			}
+			.series-label a {
+				text-decoration: none;
+			}
+			.book-meta {
+				margin: 0 0 1em;
+				color: rgb(var(--gray));
+			}
 			.date {
 				margin-bottom: 0.5em;
 				color: rgb(var(--gray));
@@ -60,7 +80,14 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 		<main>
 			<article>
 				<div class="hero-image">
-					{heroImage && <Image width={1020} height={510} src={heroImage} alt="" />}
+					{
+						heroImage &&
+							(isPortrait ? (
+								<Image width={300} src={heroImage} alt={`Cover of ${title}`} />
+							) : (
+								<Image width={1020} height={510} src={heroImage} alt="" />
+							))
+					}
 				</div>
 				<div class="prose">
 					<div class="title">
@@ -72,7 +99,19 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 								</div>
 							)}
 						</div>
+						{seriesInfo && (
+							<p class="series-label">
+								<a href={`/series/${series}/`}>{seriesInfo.title}</a>
+								{part && <span> · Part {part}</span>}
+							</p>
+						)}
 						<h1>{title}</h1>
+						{(author || rating !== undefined) && (
+							<p class="book-meta">
+								{bookEmoji} {rating !== undefined && <strong>{rating}/5</strong>}
+								{author && <span> · by {author}</span>}
+							</p>
+						)}
 						<hr />
 					</div>
 					<slot />

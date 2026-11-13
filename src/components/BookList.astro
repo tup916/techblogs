@@ -1,0 +1,100 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { CURRENTLY_READING } from '../data/series';
+
+interface Props {
+	posts: CollectionEntry<'blog'>[];
+}
+
+// One line per review: rating, an emoji for technical / non-technical, the title and the author.
+// Per post, set `rating`, `author`, `technical` (true/false) and optionally `emoji` in the frontmatter.
+const posts = [...Astro.props.posts].sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+const iconFor = (d: CollectionEntry<'blog'>['data']) => d.emoji ?? (d.technical ? '💻' : '📖');
+---
+
+<p class="legend">💻 technical · 📖 non-technical</p>
+{
+	CURRENTLY_READING.length > 0 && (
+		<ul class="books current">
+			{CURRENTLY_READING.map((book) => (
+				<li>
+					<span class="rating now">Reading</span>
+					<span class="icon" aria-hidden="true">
+						{book.technical ? '💻' : '📖'}
+					</span>
+					<span class="title">{book.title}</span>
+					<span class="by">by {book.author}</span>
+				</li>
+			))}
+		</ul>
+	)
+}
+{
+	posts.length === 0 ? (
+		<p>
+			<em>No finished reviews yet.</em>
+		</p>
+	) : (
+		<ul class="books">
+			{posts.map((post) => (
+				<li>
+					<span class="rating">
+						{post.data.rating !== undefined ? `${post.data.rating}/5` : ''}
+					</span>
+					<span class="icon" aria-hidden="true">
+						{iconFor(post.data)}
+					</span>
+					<a href={`/blog/${post.id}/`}>{post.data.title}</a>
+					{post.data.author && <span class="by">by {post.data.author}</span>}
+				</li>
+			))}
+		</ul>
+	)
+}
+
+<style>
+	.legend {
+		margin: 0 0 0.5em;
+		font-size: 0.75em;
+		color: rgb(var(--gray));
+	}
+	.books {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+	.books li {
+		display: flex;
+		align-items: baseline;
+		gap: 0.6em;
+		padding: 0.5em 0;
+		border-bottom: 1px solid rgb(var(--gray-light));
+	}
+	.rating.now {
+		font-size: 0.7em;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: rgb(var(--gray));
+	}
+	.title {
+		font-weight: 700;
+	}
+	.current {
+		margin-bottom: 0.5em;
+	}
+	.rating {
+		min-width: 2.6em;
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+		color: rgb(var(--gray-dark));
+	}
+	.books a {
+		font-weight: 700;
+		text-decoration: none;
+	}
+	.by {
+		color: rgb(var(--gray));
+	}
+</style>
